@@ -21,7 +21,6 @@ func CreateList(ctx echo.Context) (err error) {
 	}()
 
 	reqBody := new(models.ReqCreateList)
-
 	if err = ctx.Bind(reqBody); err != nil {
 		return
 	}
@@ -32,5 +31,26 @@ func CreateList(ctx echo.Context) (err error) {
 	}
 
 	res = formatResponse("Success")
+	return
+}
+
+//
+func GetLists(ctx echo.Context) (err error) {
+	res := formatResponse("Failed")
+
+	defer func() {
+		httpStatus := http.StatusBadRequest
+		if err == nil {
+			httpStatus = http.StatusOK
+		}
+		ctx.JSON(httpStatus, res)
+	}()
+
+	lists, err := models.GetLists(ctx)
+	if err != nil {
+		return
+	}
+
+	res = formatResponse("Success", lists)
 	return
 }

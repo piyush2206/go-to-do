@@ -9,6 +9,10 @@ import (
 )
 
 type (
+	collLists struct {
+		Id   bson.ObjectId `json:"id" bson:"_id"`
+		Name string        `json:"name" bson:"name"`
+	}
 	// ReqCreateList contains request body params
 	// of POST /lists api
 	ReqCreateList struct {
@@ -29,5 +33,24 @@ func CreateList(ctx echo.Context) (err error) {
 	if err = appCtx.Mdb.Lists.Insert(insertLists); err != nil {
 		return
 	}
+	return
+}
+
+func GetLists(ctx echo.Context) (lists []collLists, err error) {
+	appCtx := ctx.Get("appCtx").(*app.Context)
+
+	listId := ctx.Param("id")
+
+	queryLists := bson.M{}
+	if listId != "" {
+		queryLists = bson.M{
+			"_id": bson.ObjectIdHex(listId),
+		}
+	}
+
+	if err = appCtx.Mdb.Lists.Find(queryLists).All(&lists); err != nil {
+		return
+	}
+
 	return
 }

@@ -21,6 +21,8 @@ func attachAPIs(server *echo.Echo, appCtx *app.Context) {
 	server.Use(bindAppCtx(appCtx))
 
 	server.POST("/lists", controllers.CreateList)
+	server.GET("/lists", controllers.GetLists)
+	server.GET("/lists/:id", controllers.GetLists)
 }
 
 // bindAppCtx sets app context to api context object for dependency injection
