@@ -41,7 +41,7 @@ func CreateTask(ctx echo.Context) (err error) {
 	return
 }
 
-// UpdateTask is contoller for DELETE /lists/:id route
+// UpdateTask is contoller for PUT /lists/:id route
 func UpdateTask(ctx echo.Context) (err error) {
 	res := formatResponse("Failed")
 
@@ -79,7 +79,7 @@ func UpdateTask(ctx echo.Context) (err error) {
 	return
 }
 
-// UpdateTask is contoller for DELETE /lists/:id route
+// DeleteTask is contoller for DELETE /lists/:id route
 func DeleteTask(ctx echo.Context) (err error) {
 	res := formatResponse("Failed")
 

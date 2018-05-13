@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/piyush2206/go-to-do/models"
@@ -24,6 +25,13 @@ func CreateList(ctx echo.Context) (err error) {
 	if err = ctx.Bind(reqBody); err != nil {
 		return
 	}
+
+	if reqBody.Name == "" {
+		err = fmt.Errorf("Invalid request")
+		res = formatResponse(err.Error())
+		return
+	}
+
 	ctx.Set("req", reqBody)
 
 	if err = models.CreateList(ctx); err != nil {
