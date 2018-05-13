@@ -9,10 +9,14 @@ import (
 )
 
 type (
-	collLists struct {
-		Id   bson.ObjectId `json:"id" bson:"_id"`
-		Name string        `json:"name" bson:"name"`
+	// CollLists is collection struct of lists
+	CollLists struct {
+		Id        bson.ObjectId `json:"id" bson:"_id"`
+		Name      string        `json:"name" bson:"name"`
+		IsDelete  bool          `json:"isDelete" bson:"isDelete"`
+		UpdatedAt time.Time     `json:"updatedAt" bson:"updatedAt"`
 	}
+
 	// ReqCreateList contains request body params
 	// of POST /lists api
 	ReqCreateList struct {
@@ -27,21 +31,24 @@ func CreateList(ctx echo.Context) (err error) {
 
 	insertLists := bson.M{
 		"name":      reqBody.Name,
+		"isDelete":  false,
 		"updatedAt": time.Now(),
 	}
 
 	if err = appCtx.Mdb.Lists.Insert(insertLists); err != nil {
 		return
 	}
+
 	return
 }
 
-func GetLists(ctx echo.Context) (lists []collLists, err error) {
+// GetLists fetches all lists or a single list if id is passed
+func GetLists(ctx echo.Context) (lists []CollLists, err error) {
 	appCtx := ctx.Get("appCtx").(*app.Context)
 
 	listId := ctx.Param("id")
 
-	queryLists := bson.M{}
+	queryLists := bson.M{"isDelete": false}
 	if listId != "" {
 		queryLists = bson.M{
 			"_id": bson.ObjectIdHex(listId),
@@ -49,6 +56,23 @@ func GetLists(ctx echo.Context) (lists []collLists, err error) {
 	}
 
 	if err = appCtx.Mdb.Lists.Find(queryLists).All(&lists); err != nil {
+		return
+	}
+
+	return
+}
+
+func DeleteList(ctx echo.Context) (err error) {
+	appCtx := ctx.Get("appCtx").(*app.Context)
+
+	listId := bson.ObjectIdHex(ctx.Param("id"))
+	updateLists := bson.M{
+		"$set": bson.M{
+			"isDelete": true,
+		},
+	}
+
+	if err = appCtx.Mdb.Lists.UpdateId(listId, updateLists); err != nil {
 		return
 	}
 
