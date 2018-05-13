@@ -13,6 +13,7 @@ type (
 	CollLists struct {
 		Id        bson.ObjectId `json:"id" bson:"_id"`
 		Name      string        `json:"name" bson:"name"`
+		Tasks     []CollTasks   `json:"tasks,omitempty"`
 		IsDelete  bool          `json:"isDelete" bson:"isDelete"`
 		UpdatedAt time.Time     `json:"updatedAt" bson:"updatedAt"`
 	}
@@ -29,13 +30,13 @@ func CreateList(ctx echo.Context) (err error) {
 	appCtx := ctx.Get("appCtx").(*app.Context)
 	reqBody := ctx.Get("req").(*ReqCreateList)
 
-	insertLists := bson.M{
+	newList := bson.M{
 		"name":      reqBody.Name,
 		"isDelete":  false,
 		"updatedAt": time.Now(),
 	}
 
-	if err = appCtx.Mdb.Lists.Insert(insertLists); err != nil {
+	if err = appCtx.Mdb.Lists.Insert(newList); err != nil {
 		return
 	}
 
@@ -55,9 +56,27 @@ func GetLists(ctx echo.Context) (lists []CollLists, err error) {
 		}
 	}
 
-	if err = appCtx.Mdb.Lists.Find(queryLists).All(&lists); err != nil {
+	err = appCtx.Mdb.Lists.Find(queryLists).All(&lists)
+	if err != nil || len(lists) <= 0 {
 		return
 	}
+
+	if listId == "" {
+		return
+	}
+
+	queryTasks := bson.M{
+		"listId":   bson.ObjectIdHex(listId),
+		"isDelete": false,
+	}
+
+	var tasks []CollTasks
+	err = appCtx.Mdb.Tasks.Find(queryTasks).All(&tasks)
+	if err != nil {
+		return
+	}
+
+	lists[0].Tasks = tasks
 
 	return
 }
@@ -68,7 +87,8 @@ func DeleteList(ctx echo.Context) (err error) {
 	listId := bson.ObjectIdHex(ctx.Param("id"))
 	updateLists := bson.M{
 		"$set": bson.M{
-			"isDelete": true,
+			"isDelete":  true,
+			"updatedAt": time.Now(),
 		},
 	}
 
