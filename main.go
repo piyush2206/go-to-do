@@ -1,17 +1,12 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/labstack/echo"
+	"github.com/piyush2206/go-to-do/app"
+	"github.com/piyush2206/go-to-do/server"
 )
 
 func main() {
-	appServer := echo.New()
-	appServer.HideBanner = true
+	appCtx := app.Init()
 
-	appServer.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hullo!")
-	})
-	appServer.Logger.Fatal(appServer.Start(":1323"))
+	server.Start(appCtx)
 }
