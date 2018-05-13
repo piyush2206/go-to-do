@@ -18,17 +18,17 @@ type (
 	}
 )
 
-func initMongoDB(ctx *Ctx) {
+func initMongoDB(ctx *Context) {
 	session, err := mgo.Dial("localhost:27017")
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
+	// defer session.Close()
 
 	// Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 
-	ctx.mdb = initCollections(session)
+	ctx.Mdb = initCollections(session)
 }
 
 func initCollections(session *mgo.Session) (collections *dbCollections) {

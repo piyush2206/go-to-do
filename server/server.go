@@ -1,25 +1,34 @@
 package server
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo"
 	"github.com/piyush2206/go-to-do/app"
+	"github.com/piyush2206/go-to-do/controllers"
 )
 
 // Start initialises and starts HTTP server
-func Start(appCtx *app.Ctx) {
-	appServer := echo.New()
-	appServer.HideBanner = true
+func Start(appCtx *app.Context) {
+	server := echo.New()
+	server.HideBanner = true
 
-	attachAPIs(appServer)
+	attachAPIs(server, appCtx)
 
-	appServer.Logger.Fatal(appServer.Start(":1323"))
+	server.Logger.Fatal(server.Start(":1323"))
 }
 
-// attachAPIs adds API endpoints to the HTTP server
-func attachAPIs(appServer *echo.Echo) {
-	appServer.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hullo!")
-	})
+// attachAPIs adds API routes to the HTTP server
+func attachAPIs(server *echo.Echo, appCtx *app.Context) {
+	server.Use(bindAppCtx(appCtx))
+
+	server.POST("/lists", controllers.CreateList)
+}
+
+// bindAppCtx sets app context to api context object for dependency injection
+func bindAppCtx(appCtx *app.Context) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Set("appCtx", appCtx)
+			return next(c)
+		}
+	}
 }
